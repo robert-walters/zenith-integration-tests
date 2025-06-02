@@ -41,7 +41,7 @@ jobs:
       - run:
           name: Install Allure CLI
           command: |
-            wget -O allure.tgz https://github.com/allure-framework/allure2/releases/latest/download/allure-2.27.0.tgz
+            wget -O allure.tgz https://github.com/allure-framework/allure2/releases/download/2.34.0/allure-2.34.0.tgz
             tar -xzf allure.tgz
             sudo mv allure-2.27.0 /opt/allure
             sudo ln -s /opt/allure/bin/allure /usr/local/bin/allure
@@ -88,7 +88,7 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "45 12 * * *"  # Moldova is UTC+3; this runs at 15:40 Moldova Time
+          cron: "49 12 * * *"  # Moldova is UTC+3; this runs at 15:40 Moldova Time
           filters:
             branches:
               only:
