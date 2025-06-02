@@ -32,16 +32,17 @@ jobs:
       - checkout
 
       - run:
-          name: Set up Python environment and install dependencies
+          name: Set up Python virtual environment and install dependencies
           command: |
             cd src/be
             python -m venv .venv
             . .venv/bin/activate
+            pip install --upgrade pip
             pip install -r requirements.txt
             pip install allure-pytest
 
       - run:
-          name: Run integration tests with pytest
+          name: Run pytest with Allure reporting
           command: |
             cd src/be
             . .venv/bin/activate
@@ -62,7 +63,7 @@ jobs:
           path: src/be/allure-report
           destination: allure-html-report
 
-      - ms-teams-notifier/ms-teams-notify:
+      - ms-teams-notifier/notify:
           webhook-url: $TEAMS_WEBHOOK_URL
           message: |
             ✅ BE Integration Pytest run completed for *<< parameters.env >>* environment.
@@ -74,15 +75,15 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "0 1 * * *"  
+          cron: "0 1 * * *"  # 1:00 AM UTC = 4:00 AM Moldova time
           filters:
             branches:
               only:
-                - ci/ci-integrations 
+                - ci/ci-integrations
     jobs:
       - integration-tests:
           env: dev
           filters:
             branches:
               only:
-                - ci/ci-integrations  
+                - ci/ci-integrations
