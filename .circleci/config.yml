@@ -39,6 +39,12 @@ jobs:
             pip install allure-pytest
 
       - run:
+          name: Install Java (required for Allure CLI)
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y default-jre
+
+      - run:
           name: Install Allure CLI
           command: |
             wget -O allure.tgz https://github.com/allure-framework/allure2/releases/download/2.34.0/allure-2.34.0.tgz
@@ -52,7 +58,7 @@ jobs:
             cd src/be
             . .venv/bin/activate
             echo "🔧 Running tests in environment: ${ENV}"
-            pytest tests/ --alluredir=allure-results || echo "❌ Tests failed, but continuing to check for results..."
+            pytest tests/ --alluredir=allure-results || echo "⚠️ Tests failed, but continuing to check results"
 
       - run:
           name: Debug allure-results contents
@@ -98,7 +104,7 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "16 13 * * *"  # Runs at 16:11 Moldova time (UTC+3)
+          cron: "28 13 * * *"  # Runs at 16:11 Moldova Time (UTC+3)
           filters:
             branches:
               only:
