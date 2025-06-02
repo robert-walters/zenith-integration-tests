@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   env:
     type: enum
-    default: stage
+    default: dev
     enum:
       - stage
       - dev
@@ -21,7 +21,7 @@ jobs:
     parameters:
       env:
         type: enum
-        default: stage
+        default: dev
         enum:
           - stage
           - dev
@@ -88,10 +88,10 @@ jobs:
             ARTIFACT_URL="https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html"
 
             if grep -q '"status": "failed"' allure-results/*.json; then
-              MESSAGE="⚠️ *BE Integration tests completed with FAILURES* for *<< parameters.env >>*.\n📊 [View Allure Report](${ARTIFACT_URL})"
+              MESSAGE="⚠️ *BE Integration tests completed with FAILURES* on *<< parameters.env >>* env.\n📊 [View Allure Report](${ARTIFACT_URL})"
               STATUS_CODE=1
             else
-              MESSAGE="✅ *BE Integration tests PASSED* for *<< parameters.env >>*.\n📊 [View Allure Report](${ARTIFACT_URL})"
+              MESSAGE="✅ *BE Integration tests PASSED* on *<< parameters.env >>* env.\n📊 [View Allure Report](${ARTIFACT_URL})"
               STATUS_CODE=0
             fi
 
@@ -114,7 +114,7 @@ workflows:
                 - ci/ci-integrations
     jobs:
       - integration-tests:
-          env: stage
+          env: dev
           filters:
             branches:
               only:
