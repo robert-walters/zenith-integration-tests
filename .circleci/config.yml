@@ -6,9 +6,8 @@ orbs:
 parameters:
   env:
     type: enum
-    default: stage
+    default: dev
     enum:
-      - stage
       - dev
 
 executors:
@@ -19,13 +18,13 @@ executors:
       ENV: << pipeline.parameters.env >>
 
 jobs:
-  run-be-pytests:
+  integration-tests:
     executor: python-executor
     steps:
       - checkout
 
       - run:
-          name: Set up Python and Dependencies
+          name: Set up Python environment and dependencies
           command: |
             cd src/be
             python -m venv .venv
@@ -34,7 +33,7 @@ jobs:
             pip install allure-pytest
 
       - run:
-          name: Run Pytest and Generate Allure Results
+          name: Run Integration Tests with Pytest
           command: |
             cd src/be
             . .venv/bin/activate
@@ -42,7 +41,7 @@ jobs:
             pytest tests/ --alluredir=allure-results
 
       - run:
-          name: Generate Allure HTML Report
+          name: Generate Allure Report
           command: |
             cd src/be
             npm install -g allure-commandline --save-dev
@@ -53,19 +52,28 @@ jobs:
           path: src/be/allure-report
           destination: allure-html-report
 
-      - run:
-          name: Send MS Teams Notification with Report Link
-          command: |
-            ARTIFACT_URL="https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html"
-
-            curl -H 'Content-Type: application/json' -d "{
-              \"text\": \"✅ BE Integrations Pytest run completed. [View HTML Report]($ARTIFACT_URL)\"
-            }" \"$TEAMS_WEBHOOK_URL\"
+      - ms-teams-notifier/ms-teams-notify:
+          webhook-url: $TEAMS_WEBHOOK_URL
+          message: |
+            << pipeline.status >>
+            ✅ Integration Tests completed in DEV environment.
+            [View Allure Report](https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html)
 
 workflows:
-  version: 2.1
+  version: 2
 
-  run-backend-integration-tests:
+  nightly-integration-tests:
+    triggers:
+      - schedule:
+          cron: "0 1 * * *"  # 1:00 AM UTC = 4:00 AM Moldova time
+          filters:
+            branches:
+              only:
+                - main
     jobs:
-      - run-be-pytests:
-          env: << pipeline.parameters.env >>
+      - integration-tests:
+          env: dev
+          filters:
+            branches:
+              only:
+                - main
