@@ -88,16 +88,14 @@ jobs:
             ARTIFACT_URL="https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html"
 
             if grep -q '"status": "failed"' allure-results/*.json; then
-              MESSAGE="⚠️ *BE Integration tests completed with FAILURES* on *<< parameters.env >>* env.\n📊 [View Allure Report](${ARTIFACT_URL})"
+              MESSAGE="⚠️ BE Integration tests completed with FAILURES on **<< parameters.env >>** env.\n📊 [View Allure Report](${ARTIFACT_URL})"
               STATUS_CODE=1
             else
-              MESSAGE="✅ *BE Integration tests PASSED* on *<< parameters.env >>* env.\n📊 [View Allure Report](${ARTIFACT_URL})"
+              MESSAGE="✅ BE Integration tests PASSED on **<< parameters.env >>** env.\n📊 [View Allure Report](${ARTIFACT_URL})"
               STATUS_CODE=0
             fi
 
-            curl -H 'Content-Type: application/json' -d "{
-              \"text\": \"$MESSAGE\"
-            }" "$TEAMS_WEBHOOK_URL"
+            curl -H 'Content-Type: application/json' -d "$(jq -n --arg text "$MESSAGE" '{text: $text}')" "$TEAMS_WEBHOOK_URL"
 
             exit $STATUS_CODE
           when: always
@@ -107,7 +105,7 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "37 14 * * *"  # UTC 14:10 = 17:10 Moldova time
+          cron: "49 14 * * *"  # 17:10 Moldova time (UTC+3)
           filters:
             branches:
               only:
