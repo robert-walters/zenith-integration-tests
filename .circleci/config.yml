@@ -43,7 +43,7 @@ jobs:
           command: |
             wget -O allure.tgz https://github.com/allure-framework/allure2/releases/download/2.34.0/allure-2.34.0.tgz
             tar -xzf allure.tgz
-            sudo mv allure-2.27.0 /opt/allure
+            sudo mv allure-2.34.0 /opt/allure
             sudo ln -s /opt/allure/bin/allure /usr/local/bin/allure
 
       - run:
@@ -88,7 +88,7 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "49 12 * * *"  # Moldova is UTC+3; this runs at 15:40 Moldova Time
+          cron: "54 12 * * *"  # Moldova is UTC+3; this runs at 15:40 Moldova Time
           filters:
             branches:
               only:
