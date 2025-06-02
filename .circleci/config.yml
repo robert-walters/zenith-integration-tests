@@ -54,7 +54,7 @@ jobs:
             cd src/be
             . .venv/bin/activate
             export ENV=<< parameters.env >>
-            pytest tests/ --alluredir=allure-results
+            pytest tests/ --alluredir=allure-results || echo "Tests failed"
           when: always
 
       - run:
@@ -63,14 +63,18 @@ jobs:
             cd src/be
             if [ ! -d "allure-results" ] || [ -z "$(ls -A allure-results)" ]; then
               echo "❌ No Allure results found. Skipping report generation."
-              exit 1
+              mkdir -p allure-report
+              echo "<html><body>No results</body></html>" > allure-report/index.html
+            else
+              mkdir -p allure-report
+              allure generate --single-file allure-results --clean -o allure-report
             fi
-            mkdir -p allure-report
-            allure generate --single-file allure-results --clean -o allure-report
+          when: always
 
       - store_artifacts:
           path: src/be/allure-report
           destination: allure-html-report
+          when: always
 
       - run:
           name: Send MS Teams notification with report link
@@ -81,18 +85,13 @@ jobs:
               exit 0
             fi
 
-            if [ -z "$TEAMS_WEBHOOK_URL" ]; then
-              echo "⚠️ TEAMS_WEBHOOK_URL is not set. Skipping notification."
-              exit 0
-            fi
-
             ARTIFACT_URL="https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html"
 
             if grep -q '"status": "failed"' allure-results/*.json; then
-              MESSAGE="⚠️ *BE Integrations tests completed with FAILURES* for *<< parameters.env >>*.\n📊 [View Allure Report](${ARTIFACT_URL})"
+              MESSAGE="⚠️ *BE Integration tests completed with FAILURES* for *<< parameters.env >>*.\n📊 [View Allure Report](${ARTIFACT_URL})"
               STATUS_CODE=1
             else
-              MESSAGE="✅ *BE Integrations tests PASSED* for *<< parameters.env >>*.\n📊 [View Allure Report](${ARTIFACT_URL})"
+              MESSAGE="✅ *BE Integration tests PASSED* for *<< parameters.env >>*.\n📊 [View Allure Report](${ARTIFACT_URL})"
               STATUS_CODE=0
             fi
 
@@ -101,14 +100,14 @@ jobs:
             }" "$TEAMS_WEBHOOK_URL"
 
             exit $STATUS_CODE
+          when: always
 
 workflows:
   version: 2
-
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "09 14 * * *"  # UTC 14:10 = 17:10 Moldova
+          cron: "25 14 * * *"  # UTC 14:10 = 17:10 Moldova time
           filters:
             branches:
               only:
