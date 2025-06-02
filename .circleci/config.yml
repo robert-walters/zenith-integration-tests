@@ -6,7 +6,7 @@ orbs:
 parameters:
   env:
     type: enum
-    default: stage
+    default: dev
     enum:
       - stage
       - dev
@@ -24,7 +24,7 @@ jobs:
     parameters:
       env:
         type: enum
-        default: stage
+        default: dev
         enum:
           - stage
           - dev
@@ -52,7 +52,6 @@ jobs:
           name: Generate Allure report
           command: |
             cd src/be
-            # Install allure commandline if not installed
             if ! command -v allure &> /dev/null; then
               npm install -g allure-commandline --save-dev
             fi
@@ -66,9 +65,8 @@ jobs:
       - ms-teams-notifier/ms-teams-notify:
           webhook-url: $TEAMS_WEBHOOK_URL
           message: |
-            << pipeline.status >>
-            ✅ BE Integrations Pytest run completed in << parameters.env >> environment.
-            [View Allure Report](https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html)
+            ✅ BE Integration Pytest run completed for *<< parameters.env >>* environment.
+            📊 [View Allure Report](https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html)
 
 workflows:
   version: 2
@@ -76,15 +74,15 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "0 1 * * *"  # 1:00 AM UTC = 4:00 AM Moldova time
+          cron: "0 1 * * *"  
           filters:
             branches:
               only:
-                - main
+                - ci/ci-integrations 
     jobs:
       - integration-tests:
-          env: stage
+          env: dev
           filters:
             branches:
               only:
-                - main
+                - ci/ci-integrations  
