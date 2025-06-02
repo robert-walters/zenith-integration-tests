@@ -63,7 +63,7 @@ jobs:
           path: src/be/allure-report
           destination: allure-html-report
 
-      - ms-teams-notifier/notify:
+      - ms-teams-notifier/send:
           webhook-url: $TEAMS_WEBHOOK_URL
           message: |
             ✅ BE Integration Pytest run completed for *<< parameters.env >>* environment.
