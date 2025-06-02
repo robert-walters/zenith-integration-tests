@@ -72,11 +72,14 @@ jobs:
       - run:
           name: Send MS Teams notification with report link
           command: |
+<<<<<<< HEAD
             cd src/be
             if [ ! -f "allure-report/index.html" ]; then
               echo "❌ No report found. Skipping Teams notification."
               exit 0
             fi
+=======
+>>>>>>> 7db66af3aaca675bf4fda054e6c73ce2b7b4e2df
             ARTIFACT_URL="https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html"
             curl -H 'Content-Type: application/json' -d "{
               \"text\": \"✅ BE Integration Pytest run completed for *<< parameters.env >>* environment.\n📊 [View Allure Report]($ARTIFACT_URL)\"
@@ -88,7 +91,11 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "40 12 * * *"  # Moldova is UTC+3; this runs at 15:40 Moldova Time
+<<<<<<< HEAD
+          cron: "45 12 * * *"  # Moldova is UTC+3; this runs at 15:45 Moldova Time
+=======
+          cron: "20 12 * * *"
+>>>>>>> 7db66af3aaca675bf4fda054e6c73ce2b7b4e2df
           filters:
             branches:
               only:
