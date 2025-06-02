@@ -6,8 +6,9 @@ orbs:
 parameters:
   env:
     type: enum
-    default: dev
+    default: stage
     enum:
+      - stage
       - dev
 
 executors:
@@ -20,11 +21,18 @@ executors:
 jobs:
   integration-tests:
     executor: python-executor
+    parameters:
+      env:
+        type: enum
+        default: stage
+        enum:
+          - stage
+          - dev
     steps:
       - checkout
 
       - run:
-          name: Set up Python environment and dependencies
+          name: Set up Python environment and install dependencies
           command: |
             cd src/be
             python -m venv .venv
@@ -33,18 +41,21 @@ jobs:
             pip install allure-pytest
 
       - run:
-          name: Run Integration Tests with Pytest
+          name: Run integration tests with pytest
           command: |
             cd src/be
             . .venv/bin/activate
-            export ENV=<< pipeline.parameters.env >>
+            export ENV=<< parameters.env >>
             pytest tests/ --alluredir=allure-results
 
       - run:
-          name: Generate Allure Report
+          name: Generate Allure report
           command: |
             cd src/be
-            npm install -g allure-commandline --save-dev
+            # Install allure commandline if not installed
+            if ! command -v allure &> /dev/null; then
+              npm install -g allure-commandline --save-dev
+            fi
             mkdir -p allure-report
             allure generate --single-file allure-results --clean -o allure-report
 
@@ -56,7 +67,7 @@ jobs:
           webhook-url: $TEAMS_WEBHOOK_URL
           message: |
             << pipeline.status >>
-            ✅ Integration Tests completed in DEV environment.
+            ✅ BE Integrations Pytest run completed in << parameters.env >> environment.
             [View Allure Report](https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html)
 
 workflows:
@@ -72,7 +83,7 @@ workflows:
                 - main
     jobs:
       - integration-tests:
-          env: dev
+          env: stage
           filters:
             branches:
               only:
