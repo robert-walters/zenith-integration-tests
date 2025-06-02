@@ -25,16 +25,16 @@ Setup Instructions:
 Project Structure:
 
 src/
-├── be/
-│   ├── configuration/        -> environment config files
-│   ├── tests/                -> test cases organized by endpoint
-│   ├── utilities/            -> helper functions, logger, etc.
-│   ├── pytest.ini            -> pytest configuration
-│   ├── requirements.txt      -> dependencies for BE tests
-│   ├── run_dev_tests.sh      -> shell script to run all tests on dev environment
-│   └── run_stage_tests.sh    -> shell script to run all tests on stage environment
-├── .gitignore
-└── README.md
+  be/
+    configuration/         # environment config files
+    tests/                 # test cases organized by endpoint
+    utilities/             # helper functions, logger, etc.
+    pytest.ini             # pytest configuration
+    requirements.txt       # dependencies for BE tests
+    run_dev_tests.sh       # shell script to run all tests on dev environment
+    run_stage_tests.sh     # shell script to run all tests on stage environment
+.gitignore
+README.md
 
 ------------------------------------------------------------
 Running Tests:
