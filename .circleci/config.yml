@@ -1,0 +1,71 @@
+version: 2.1
+
+orbs:
+  ms-teams-notifier: oktapodia/ms-teams-notifier@3.0.0
+
+parameters:
+  env:
+    type: enum
+    default: stage
+    enum:
+      - stage
+      - dev
+
+executors:
+  python-executor:
+    docker:
+      - image: cimg/python:3.11
+    environment:
+      ENV: << pipeline.parameters.env >>
+
+jobs:
+  run-be-pytests:
+    executor: python-executor
+    steps:
+      - checkout
+
+      - run:
+          name: Set up Python and Dependencies
+          command: |
+            cd src/be
+            python -m venv .venv
+            . .venv/bin/activate
+            pip install -r requirements.txt
+            pip install allure-pytest
+
+      - run:
+          name: Run Pytest and Generate Allure Results
+          command: |
+            cd src/be
+            . .venv/bin/activate
+            export ENV=<< pipeline.parameters.env >>
+            pytest tests/ --alluredir=allure-results
+
+      - run:
+          name: Generate Allure HTML Report
+          command: |
+            cd src/be
+            npm install -g allure-commandline --save-dev
+            mkdir -p allure-report
+            allure generate --single-file allure-results --clean -o allure-report
+
+      - store_artifacts:
+          path: src/be/allure-report
+          destination: allure-html-report
+
+      - run:
+          name: Send MS Teams Notification with Report Link
+          command: |
+            ARTIFACT_URL="https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html"
+
+            curl -H 'Content-Type: application/json' -d "{
+              \"text\": \"✅ BE Integrations Pytest run completed. [View HTML Report]($ARTIFACT_URL)\"
+            }" \"$TEAMS_WEBHOOK_URL\"
+
+workflows:
+  version: 2.1
+
+  run-backend-integration-tests:
+    jobs:
+      - run-be-pytests:
+          env: << pipeline.parameters.env >>
