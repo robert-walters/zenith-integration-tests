@@ -1,8 +1,5 @@
 version: 2.1
 
-orbs:
-  ms-teams-notifier: oktapodia/ms-teams-notifier@3.0.0
-
 parameters:
   env:
     type: enum
@@ -63,11 +60,13 @@ jobs:
           path: src/be/allure-report
           destination: allure-html-report
 
-      - ms-teams-notifier/send:
-          webhook-url: $TEAMS_WEBHOOK_URL
-          message: |
-            ✅ BE Integration Pytest run completed for *<< parameters.env >>* environment.
-            📊 [View Allure Report](https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html)
+      - run:
+          name: Send MS Teams notification with report link
+          command: |
+            ARTIFACT_URL="https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html"
+            curl -H 'Content-Type: application/json' -d "{
+              \"text\": \"✅ BE Integration Pytest run completed for *<< parameters.env >>* environment.\n📊 [View Allure Report]($ARTIFACT_URL)\"
+            }" "$TEAMS_WEBHOOK_URL"
 
 workflows:
   version: 2
@@ -75,7 +74,7 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "0 1 * * *"  # 1:00 AM UTC = 4:00 AM Moldova time
+          cron: "0 1 * * *"
           filters:
             branches:
               only:
