@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   env:
     type: enum
-    default: dev
+    default: stae
     enum:
       - stage
       - dev
@@ -21,7 +21,7 @@ jobs:
     parameters:
       env:
         type: enum
-        default: dev
+        default: stage
         enum:
           - stage
           - dev
@@ -88,7 +88,7 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "54 12 * * *"  # Moldova is UTC+3; this runs at 15:40 Moldova Time
+          cron: "59 12 * * *"  # Moldova is UTC+3; this runs at 15:40 Moldova Time
           filters:
             branches:
               only:
