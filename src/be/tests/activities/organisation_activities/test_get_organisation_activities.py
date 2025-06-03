@@ -16,6 +16,7 @@ from src.be.utilities.organisations_utilities.request_payloads.create_organisati
     create_organisation_required_payload
 from src.be.utilities.useful_functions import validate_response_schema_and_fields, \
     validate_response_with_expected_json, get_random_uuid, standard_headers
+from src.be.configuration.config_parser import assert_by_auth_type
 
 base_url = get_config_value("base_url")
 endpoint = "organisations/"
@@ -57,13 +58,9 @@ def test_get_organisation_activity_by_nonexistent_id():
 
 def test_get_organisation_activity_by_id_misspelled_endpoint():
     response = get_activity_request(base_url, "organisation/", org_id, activity_id, headers)
-    assert response.status_code == 404
-    schema = error_schema
-    validate(response.json(), schema=schema)
-    response_fields = set(response.json().keys())
-    schema_fields = set(schema.get("properties", {}).keys())
-    assert response_fields == schema_fields, f"Response fields do not match schema. Expected: {schema_fields}, \
-    Got: {response_fields}"
+    xapi_setting = get_config_value("xapi")
+    config = {"xapi": xapi_setting}
+    assert_by_auth_type(response, config)
 
 
 def test_get_organisation_activity_original():

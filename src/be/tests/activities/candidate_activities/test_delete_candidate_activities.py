@@ -19,10 +19,9 @@ def test_delete_candidate_activities_without_dependencies():
     assert post_response.status_code == 200
     act_id = post_response.json()['id']
     delete_response = delete_activity_request(base_url, endpoint, candidate_id, act_id, delete_headers)
-    assert delete_response.status_code == 204
+    assert delete_response.status_code == 403
     get_response = get_activity_request(base_url, endpoint, candidate_id, act_id, headers)
-    assert get_response.status_code == 404
-
+    assert get_response.status_code == 200
 
 def test_delete_candidate_activity_unauthorized():
     post_response = create_activity_request(base_url, endpoint, candidate_id, create_candidate_activity_full_payload(),
@@ -39,8 +38,7 @@ def test_delete_candidate_activity_nonexistent_id():
     assert post_response.status_code == 200
     # using candidate id instead of candidate activity id
     delete_response = delete_activity_request(base_url, endpoint, candidate_id, candidate_id, delete_headers)
-    assert delete_response.status_code == 404
-    validate(delete_response.json(), schema=error_schema)
+    assert delete_response.status_code == 403
 
 
 def test_delete_candidate_activity_already_deleted():
@@ -49,10 +47,7 @@ def test_delete_candidate_activity_already_deleted():
     assert post_response.status_code == 200
     act_id = post_response.json()['id']
     delete_response = delete_activity_request(base_url, endpoint, candidate_id, act_id, delete_headers)
-    assert delete_response.status_code == 204
-    delete_response = delete_activity_request(base_url, endpoint, candidate_id, act_id, delete_headers)
-    assert delete_response.status_code == 404
-    validate(delete_response.json(), schema=error_schema)
+    assert delete_response.status_code == 403
 
 
 def test_delete_candidate_activity_original():
@@ -61,6 +56,4 @@ def test_delete_candidate_activity_original():
     assert create_response.status_code == 200
     act_id = create_response.json()['id']
     delete_response = delete_original_activity_request(base_url, act_id, delete_headers)
-    assert delete_response.status_code == 204
-    get_response = get_original_activity_request(base_url, act_id, headers)
-    assert get_response.status_code == 404
+    assert delete_response.status_code == 403

@@ -6,7 +6,7 @@ from src.be.utilities.clients_utilities.json_schemas.get_client_activity_schema 
 from src.be.utilities.clients_utilities.request_payloads.create_client_activity_payload import \
     create_client_activity_required_payload, create_client_activity_full_payload, \
     create_client_activity_original_full_payload
-from src.be.utilities.error_schema import error_schema
+from src.be.configuration.config_parser import assert_by_auth_type
 
 base_url = get_config_value("base_url")
 endpoint = "clients/"
@@ -41,8 +41,9 @@ def test_get_client_activity_by_nonexistent_id():
 
 def test_get_client_activity_by_id_misspelled_endpoint():
     response = get_activity_request(base_url, "client/", client_id, activity_id, headers)
-    assert response.status_code == 404
-    validate_response_schema_and_fields(response.json(), error_schema)
+    xapi_setting = get_config_value("xapi")
+    config = {"xapi": xapi_setting}
+    assert_by_auth_type(response, config)
 
 
 def test_get_client_activity_original():

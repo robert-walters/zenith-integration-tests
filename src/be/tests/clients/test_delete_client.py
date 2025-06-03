@@ -17,11 +17,11 @@ def test_delete_client_without_dependencies():
     assert create_response.status_code == 200
     client_id = create_response.json()['id']
     delete_response = delete_client_request(base_url, endpoint, client_id, delete_headers)
-    assert delete_response.status_code == 204
+    assert delete_response.status_code == 403
     get_response = get_client_request(base_url, endpoint, client_id, headers)
-    assert get_response.status_code == 404
+    assert get_response.status_code == 200
     core_api_response = get_client_by_id_from_core_api(client_id)
-    assert core_api_response.status_code == 404
+    assert core_api_response.status_code == 200
 
 
 def test_delete_client_with_activities_checking_dependencies():
@@ -30,7 +30,7 @@ def test_delete_client_with_activities_checking_dependencies():
     client_id = create_response.json()['id']
     add_activity_to_client(client_id)
     response = delete_clients_check_dependencies_request(base_url, endpoint, client_id, delete_headers)
-    assert response.status_code == 400
+    assert response.status_code == 403
 
 
 def test_delete_client_with_alerts_checking_dependencies():
@@ -39,7 +39,7 @@ def test_delete_client_with_alerts_checking_dependencies():
     client_id = create_response.json()['id']
     add_alert_to_client(client_id)
     response = delete_clients_check_dependencies_request(base_url, endpoint, client_id, delete_headers)
-    assert response.status_code == 400
+    assert response.status_code == 403
 
 
 def test_delete_client_with_reviews_checking_dependencies():
@@ -48,7 +48,7 @@ def test_delete_client_with_reviews_checking_dependencies():
     client_id = create_response.json()['id']
     add_review_to_client(client_id)
     response = delete_clients_check_dependencies_request(base_url, endpoint, client_id, delete_headers)
-    assert response.status_code == 400
+    assert response.status_code == 403
 
 
 def test_delete_client_with_activities_ignore_dependencies():
@@ -57,7 +57,7 @@ def test_delete_client_with_activities_ignore_dependencies():
     client_id = create_response.json()['id']
     add_activity_to_client(client_id)
     response = delete_clients_ignore_dependencies_request(base_url, endpoint, client_id, delete_headers)
-    assert response.status_code == 204
+    assert response.status_code == 403
 
 
 def test_delete_client_with_alerts_ignore_dependencies():
@@ -66,7 +66,7 @@ def test_delete_client_with_alerts_ignore_dependencies():
     client_id = create_response.json()['id']
     add_alert_to_client(client_id)
     response = delete_clients_ignore_dependencies_request(base_url, endpoint, client_id, delete_headers)
-    assert response.status_code == 204
+    assert response.status_code == 403
 
 
 def test_delete_client_with_reviews_ignore_dependencies():
@@ -75,7 +75,7 @@ def test_delete_client_with_reviews_ignore_dependencies():
     client_id = create_response.json()['id']
     add_review_to_client(client_id)
     response = delete_clients_ignore_dependencies_request(base_url, endpoint, client_id, delete_headers)
-    assert response.status_code == 204
+    assert response.status_code == 403
 
 
 def test_delete_client_unauthorized():

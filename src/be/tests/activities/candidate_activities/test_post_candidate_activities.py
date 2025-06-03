@@ -5,6 +5,7 @@ from src.be.utilities.candidates_utilities.request_payloads.create_candidate_act
 from src.be.utilities.error_schema import error_schema
 from src.be.utilities.candidates_utilities.json_schemas.post_candidate_activity_schema import \
     post_candidate_activity_schema
+from src.be.configuration.config_parser import assert_by_auth_type
 
 base_url = get_config_value("base_url")
 endpoint = "candidates/"
@@ -55,7 +56,9 @@ def test_create_candidate_activity_unauthorized():
 def test_create_candidate_activity_misspelled_endpoint():
     payload = create_candidate_activity_required_payload()
     activity_response = create_activity_request(base_url, "candidate/", candidate_id, payload, headers)
-    assert activity_response.status_code == 404
+    xapi_setting = get_config_value("xapi")
+    config = {"xapi": xapi_setting}
+    assert_by_auth_type(activity_response, config)
 
 
 def test_create_candidate_activity_empty_payload():
