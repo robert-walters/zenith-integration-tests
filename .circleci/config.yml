@@ -107,7 +107,7 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "25 15 * * *"
+          cron: "30 15 * * *"
           filters:
             branches:
               only:
