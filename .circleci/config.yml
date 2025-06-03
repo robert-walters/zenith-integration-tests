@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   env:
     type: enum
-    default: test
+    default: dev
     enum:
       - stage
       - dev
@@ -21,7 +21,7 @@ jobs:
     parameters:
       env:
         type: enum
-        default: test
+        default: dev
         enum:
           - stage
           - dev
@@ -54,7 +54,7 @@ jobs:
             cd src/be
             . .venv/bin/activate
             export ENV=<< parameters.env >>
-            pytest tests/ --alluredir=allure-results || echo "Tests failed"
+            pytest tests888/ --alluredir=allure-results || echo "Tests failed"
           when: always
 
       - run:
@@ -107,14 +107,14 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "17 6 * * *"
+          cron: "19 6 * * *"
           filters:
             branches:
               only:
                 - ci/ci-integrations
     jobs:
       - integration-tests:
-          env: test
+          env: dev
           filters:
             branches:
               only:
