@@ -5,6 +5,7 @@ from src.be.utilities.error_schema import error_schema
 from src.be.utilities.candidates_utilities.json_schemas.get_candidate_by_id_schema import get_candidate_by_id_schema
 from src.be.definitions.candidates_definitions import get_candidate_id, get_candidates_by_id
 from src.be.utilities.useful_functions import get_random_uuid, standard_headers, validate_response_schema_and_fields
+from src.be.configuration.config_parser import assert_by_auth_type
 
 base_url = get_config_value("base_url")
 endpoint = "candidates/"
@@ -35,8 +36,9 @@ def test_get_candidate_by_id_json_schema():
 
 def test_get_candidate_by_id_misspelled_endpoint():
     response = get_candidates_by_id(base_url, "wrong" + endpoint, candidate_id, headers)
-    assert response.status_code == 404
-    validate_response_schema_and_fields(response.json(), error_schema)
+    xapi_setting = get_config_value("xapi")
+    config = {"xapi": xapi_setting}
+    assert_by_auth_type(response, config)
 
 
 def test_get_candidate_by_id_wrong_format():

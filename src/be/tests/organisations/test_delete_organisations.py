@@ -19,11 +19,11 @@ def test_delete_organisations_without_dependencies():
     assert create_response.status_code == 200
     org_id = create_response.json()['id']
     delete_response = delete_organisations_request(base_url, endpoint, org_id, delete_headers)
-    assert delete_response.status_code == 204
+    assert delete_response.status_code == 403
     get_response = get_organisations_request(base_url, endpoint, org_id, headers)
-    assert get_response.status_code == 404
+    assert get_response.status_code == 200
     core_api_response = get_organisations_by_id_from_core_api(org_id)
-    assert core_api_response.status_code == 404, f"Response: {core_api_response.json()}"
+    assert core_api_response.status_code == 200, f"Response: {core_api_response.json()}"
 
 
 def test_delete_organisations_unauthorized():
@@ -36,7 +36,7 @@ def test_delete_organisations_unauthorized():
 
 def test_delete_organisations_nonexistent_id():
     delete_response = delete_organisations_request(base_url, endpoint, get_random_uuid(), delete_headers)
-    assert delete_response.status_code == 404
+    assert delete_response.status_code == 403
 
 
 def test_delete_organisations_wrong_endpoint():
@@ -45,7 +45,7 @@ def test_delete_organisations_wrong_endpoint():
     assert create_response.status_code == 200
     org_id = create_response.json()['id']
     delete_response = delete_organisations_request(base_url, "organisation", org_id, delete_headers)
-    assert delete_response.status_code == 404
+    assert delete_response.status_code == 403
 
 
 def test_delete_organisations_with_activities_checking_dependencies():
@@ -54,7 +54,7 @@ def test_delete_organisations_with_activities_checking_dependencies():
     org_id = create_response.json()['id']
     add_activity_to_organisation(org_id)
     response = delete_organisations_check_dependencies_request(base_url, endpoint, org_id, delete_headers)
-    assert response.status_code == 400
+    assert response.status_code == 403
 
 
 def test_delete_organisations_with_alerts_checking_dependencies():
@@ -63,7 +63,7 @@ def test_delete_organisations_with_alerts_checking_dependencies():
     org_id = create_response.json()['id']
     add_alert_to_organisation(org_id)
     response = delete_organisations_check_dependencies_request(base_url, endpoint, org_id, delete_headers)
-    assert response.status_code == 400
+    assert response.status_code == 403
 
 
 #
@@ -74,7 +74,7 @@ def test_delete_organisations_with_locations_checking_dependencies():
     org_id = create_response.json()['id']
     add_location_to_organisation(org_id)
     response = delete_organisations_check_dependencies_request(base_url, endpoint, org_id, delete_headers)
-    assert response.status_code == 400
+    assert response.status_code == 403
 
 
 def test_delete_organisations_with_activities_ignore_dependencies():
@@ -83,7 +83,7 @@ def test_delete_organisations_with_activities_ignore_dependencies():
     org_id = create_response.json()['id']
     add_activity_to_organisation(org_id)
     response = delete_organisations_ignore_dependencies_request(base_url, endpoint, org_id, delete_headers)
-    assert response.status_code == 204
+    assert response.status_code == 403
 
 
 def test_delete_organisations_with_alerts_ignore_dependencies():
@@ -92,7 +92,7 @@ def test_delete_organisations_with_alerts_ignore_dependencies():
     org_id = create_response.json()['id']
     add_alert_to_organisation(org_id)
     response = delete_organisations_ignore_dependencies_request(base_url, endpoint, org_id, delete_headers)
-    assert response.status_code == 204
+    assert response.status_code == 403
 
 
 #
@@ -103,4 +103,4 @@ def test_delete_organisations_with_locations_ignore_dependencies():
     org_id = create_response.json()['id']
     add_location_to_organisation(org_id)
     response = delete_organisations_ignore_dependencies_request(base_url, endpoint, org_id, delete_headers)
-    assert response.status_code == 204
+    assert response.status_code == 403

@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   env:
     type: enum
-    default: dev
+    default: stage
     enum:
       - stage
       - dev
@@ -21,7 +21,7 @@ jobs:
     parameters:
       env:
         type: enum
-        default: dev
+        default: stage
         enum:
           - stage
           - dev
@@ -41,9 +41,11 @@ jobs:
       - run:
           name: Install Allure CLI
           command: |
-            wget -O allure.tgz https://github.com/allure-framework/allure2/releases/latest/download/allure-2.27.0.tgz
+            sudo apt-get update
+            sudo apt-get install -y default-jre wget
+            wget -O allure.tgz https://github.com/allure-framework/allure2/releases/download/2.34.0/allure-2.34.0.tgz
             tar -xzf allure.tgz
-            sudo mv allure-2.27.0 /opt/allure
+            sudo mv allure-2.34.0 /opt/allure
             sudo ln -s /opt/allure/bin/allure /usr/local/bin/allure
 
       - run:
@@ -52,7 +54,8 @@ jobs:
             cd src/be
             . .venv/bin/activate
             export ENV=<< parameters.env >>
-            pytest tests/ --alluredir=allure-results
+            pytest tests/ --alluredir=allure-results || echo "Tests failed"
+          when: always
 
       - run:
           name: Generate Allure report
@@ -60,31 +63,47 @@ jobs:
             cd src/be
             if [ ! -d "allure-results" ] || [ -z "$(ls -A allure-results)" ]; then
               echo "❌ No Allure results found. Skipping report generation."
-              exit 1
+              mkdir -p allure-report
+              echo "<html><body>No results</body></html>" > allure-report/index.html
+            else
+              mkdir -p allure-report
+              allure generate --single-file allure-results --clean -o allure-report
             fi
-            mkdir -p allure-report
-            allure generate --single-file allure-results --clean -o allure-report
+          when: always
 
       - store_artifacts:
           path: src/be/allure-report
           destination: allure-html-report
+          when: always
 
       - run:
           name: Send MS Teams notification with report link
           command: |
             cd src/be
-            if [ ! -f "allure-report/index.html" ]; then
-              echo "❌ No report found. Skipping Teams notification."
-              exit 0
-            fi
+
             ARTIFACT_URL="https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html"
-            curl -H 'Content-Type: application/json' -d "{
-              \"text\": \"✅ BE Integration Pytest run completed for *<< parameters.env >>* environment.\n📊 [View Allure Report]($ARTIFACT_URL)\"
-            }" "$TEAMS_WEBHOOK_URL"
+
+            if [ ! -d "allure-results" ] || [ -z "$(ls -A allure-results)" ]; then
+              MESSAGE="❌ BE Integration tests could NOT be executed on **<< parameters.env >>** env, please check the CircleCI for more information."
+              curl -H 'Content-Type: application/json' -d "$(jq -n --arg text "$MESSAGE" '{text: $text}')" "$TEAMS_WEBHOOK_URL"
+              exit 1
+            fi
+
+            if grep -q '"status": "failed"' allure-results/*.json; then
+              MESSAGE="❌ BE Integrations tests completed with FAILURES on **<< parameters.env >>** env. 📊 [View Allure Report](${ARTIFACT_URL})"
+              STATUS_CODE=1
+            else
+              MESSAGE="✅ BE Integrations tests PASSED on **<< parameters.env >>** env. 📊 [View Allure Report](${ARTIFACT_URL})"
+              STATUS_CODE=0
+            fi
+
+            curl -H 'Content-Type: application/json' -d "$(jq -n --arg text "$MESSAGE" '{text: $text}')" "$TEAMS_WEBHOOK_URL"
+
+            exit $STATUS_CODE
+          when: always
 
 workflows:
   version: 2
-
   nightly-integration-tests:
     triggers:
       - schedule:
@@ -95,7 +114,7 @@ workflows:
                 - ci/ci-integrations
     jobs:
       - integration-tests:
-          env: dev
+          env: stage
           filters:
             branches:
               only:
