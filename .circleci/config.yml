@@ -107,7 +107,7 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "49 14 * * *"  # 17:10 Moldova time (UTC+3)
+          cron: "17 6 * * *"
           filters:
             branches:
               only:
