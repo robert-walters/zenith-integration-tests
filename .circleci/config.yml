@@ -88,7 +88,7 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "40 12 * * *"  # Moldova is UTC+3; this runs at 15:40 Moldova Time
+          cron: "5 15 * * *"
           filters:
             branches:
               only:
