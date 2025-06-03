@@ -107,15 +107,15 @@ workflows:
   nightly-integration-tests:
     triggers:
       - schedule:
-          cron: "30 15 * * *"
+          cron: "0 1 * * *"
           filters:
             branches:
               only:
-                - ci/ci-integrations
+                - main
     jobs:
       - integration-tests:
           env: stage
           filters:
             branches:
               only:
-                - ci/ci-integrations
+                - main
