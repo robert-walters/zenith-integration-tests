@@ -1,9 +1,11 @@
+from src.be.configuration.config_parser import assert_by_auth_type
 from src.be.definitions.candidates_definitions import get_candidate_id
 from src.be.utilities.candidates_utilities.request_payloads.create_candidate_activity_payload import *
 from src.be.utilities.error_schema import error_schema
 from src.be.utilities.useful_functions import validate_response_schema_and_fields
 from src.be.utilities.candidates_utilities.json_schemas.get_candidate_activity_schema import \
     get_candidate_activity_schema
+
 
 base_url = get_config_value("base_url")
 endpoint = "candidates/"
@@ -38,8 +40,9 @@ def test_get_candidate_activity_by_nonexistent_id():
 
 def test_get_candidate_activity_by_id_misspelled_endpoint():
     response = get_activity_request(base_url, "candidate/", candidate_id, activity_id, headers)
-    assert response.status_code == 404
-    validate_response_schema_and_fields(response.json(), error_schema)
+    xapi_setting = get_config_value("xapi")
+    config = {"xapi": xapi_setting}
+    assert_by_auth_type(response, config)
 
 
 def test_get_candidate_activity_original():

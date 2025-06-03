@@ -4,6 +4,7 @@ from src.be.utilities.error_schema import error_schema
 from src.be.utilities.job_utilities.json_schemas.get_jobs_by_id_schema import get_jobs_schema
 from src.be.utilities.job_utilities.request_payloads.create_job_payload import create_job_full_payload
 from src.be.utilities.useful_functions import get_random_uuid, standard_headers, validate_response_schema_and_fields
+from src.be.configuration.config_parser import assert_by_auth_type
 
 base_url = get_config_value("base_url")
 endpoint = "jobs/"
@@ -30,8 +31,9 @@ def test_get_jobs_by_nonexistent_id():
 
 def test_get_jobs_by_id_misspelled_endpoint():
     response = get_jobs_request(base_url, "job/", get_random_uuid(), headers)
-    assert response.status_code == 404
-    validate_response_schema_and_fields(response.json(), error_schema)
+    xapi_setting = get_config_value("xapi")
+    config = {"xapi": xapi_setting}
+    assert_by_auth_type(response, config)
 
 
 def test_get_jobs_by_id_wrong_format():

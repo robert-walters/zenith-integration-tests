@@ -11,6 +11,7 @@ from src.be.utilities.job_utilities.request_payloads.create_job_activity_payload
 from src.be.utilities.job_utilities.request_payloads.create_job_payload import create_job_required_fields_payload
 from src.be.utilities.useful_functions import validate_response_with_expected_json, \
     random_string, missing_required_field_payload, standard_headers, validate_response_schema_and_fields
+from src.be.configuration.config_parser import assert_by_auth_type
 
 base_url = get_config_value("base_url")
 endpoint = "jobs/"
@@ -70,8 +71,9 @@ def test_create_job_activity_unauthorized():
 def test_create_job_activity_misspelled_endpoint():
     payload = create_job_activity_required_fields_payload()
     activity_response = create_activity_request(base_url, "job/", job_id, payload, headers)
-    assert activity_response.status_code == 404
-    validate_response_schema_and_fields(activity_response.json(), error_schema)
+    xapi_setting = get_config_value("xapi")
+    config = {"xapi": xapi_setting}
+    assert_by_auth_type(activity_response, config)
 
 
 def test_create_job_activity_empty_payload():
