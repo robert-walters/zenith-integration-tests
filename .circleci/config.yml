@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   env:
     type: enum
-    default: dev
+    default: test
     enum:
       - stage
       - dev
@@ -21,7 +21,7 @@ jobs:
     parameters:
       env:
         type: enum
-        default: dev
+        default: test
         enum:
           - stage
           - dev
@@ -80,18 +80,20 @@ jobs:
           name: Send MS Teams notification with report link
           command: |
             cd src/be
-            if [ ! -f "allure-report/index.html" ]; then
-              echo "❌ No report found. Skipping Teams notification."
-              exit 0
-            fi
 
             ARTIFACT_URL="https://output.circle-artifacts.com/output/job/${CIRCLE_WORKFLOW_JOB_ID}/artifacts/0/allure-html-report/index.html"
 
+            if [ ! -d "allure-results" ] || [ -z "$(ls -A allure-results)" ]; then
+              MESSAGE="❌ BE Integration tests could NOT be executed on **<< parameters.env >>** env, please check the CircleCI for more information."
+              curl -H 'Content-Type: application/json' -d "$(jq -n --arg text "$MESSAGE" '{text: $text}')" "$TEAMS_WEBHOOK_URL"
+              exit 1
+            fi
+
             if grep -q '"status": "failed"' allure-results/*.json; then
-              MESSAGE="⚠️ BE Integration tests completed with FAILURES on **<< parameters.env >>** env.\n📊 [View Allure Report](${ARTIFACT_URL})"
+              MESSAGE="⚠️ BE Integrations tests completed with FAILURES on **<< parameters.env >>** env. 📊 [View Allure Report](${ARTIFACT_URL})"
               STATUS_CODE=1
             else
-              MESSAGE="✅ BE Integration tests PASSED on **<< parameters.env >>** env.\n📊 [View Allure Report](${ARTIFACT_URL})"
+              MESSAGE="✅ BE Integrations tests PASSED on **<< parameters.env >>** env. 📊 [View Allure Report](${ARTIFACT_URL})"
               STATUS_CODE=0
             fi
 
@@ -112,7 +114,7 @@ workflows:
                 - ci/ci-integrations
     jobs:
       - integration-tests:
-          env: dev
+          env: test
           filters:
             branches:
               only:
